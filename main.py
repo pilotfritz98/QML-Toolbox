@@ -257,8 +257,7 @@ blp_zx_calculus = Blueprint(
 
 #Request schema for the expressibility tool
 class ZXCalculusRequestSchema(ma.Schema):
-    ansatz = ma.fields.String()
-    num_qubits = ma.fields.Int()
+    qasm = ma.fields.String()
     num_layers = ma.fields.Int()
     hamiltonian = ma.fields.String()
     parameter = ma.fields.Int()
@@ -274,8 +273,15 @@ class ZXCalculusResponseSchema(ma.Schema):
 @blp_zx_calculus.arguments(
     ZXCalculusRequestSchema,
     example=dict(
-        ansatz='sim1',
-        num_qubits=2,
+        qasm="""
+            OPENQASM 2.0;
+            include \"qelib1.inc\";
+            qreg q[2];
+            rx(0.023809523809523808*pi) q[0];
+            rz(0.023809523809523808*pi) q[0];
+            rx(0.023809523809523808*pi) q[1];
+            rz(0.023809523809523808*pi) q[1];
+        """,
         num_layers=1,
         hamiltonian='ZZ',
         parameter=0,
@@ -285,12 +291,11 @@ class ZXCalculusResponseSchema(ma.Schema):
 def zx_calculus(inputs: dict):
     check_zx_calculus_inputs(inputs)
     binary_path = 'zx-calculus/target/release/bpdetect'
-    ansatz = inputs["ansatz"]
-    num_qubits = inputs["num_qubits"]
+    qasm = inputs["qasm"]
     num_layers = inputs["num_layers"]
     hamiltonian = inputs["hamiltonian"]
     parameter = inputs["parameter"]
-    p = Popen([binary_path, ansatz, str(num_qubits), str(num_layers), hamiltonian, str(parameter)], stdout=PIPE, stderr=PIPE)
+    p = Popen([binary_path, qasm, str(num_layers), hamiltonian, str(parameter)], stdout=PIPE, stderr=PIPE)
 
     variance, _ = p.communicate()
 
@@ -299,7 +304,7 @@ def zx_calculus(inputs: dict):
         return {"zx_calculus": _.decode('ASCII').strip()}
     else:
         variance = variance.decode('ASCII').rstrip()
-        s = f"{ansatz}-{num_qubits}-{num_layers}-{hamiltonian}-{parameter}: {variance}"
+        s = f"{qasm}-{num_layers}-{hamiltonian}-{parameter}: {variance}"
         print(s)
         return {"zx_calculus": s}
 
@@ -352,9 +357,7 @@ def check_expressibility_inputs(inputs):
 
 
 def check_zx_calculus_inputs(inputs):
-    if inputs["num_qubits"] < 1:
-        raise InvalidInputError("The number of qubits (num_qubits) must be at least 1.")
-    elif inputs["num_layers"] < 1:
+    if inputs["num_layers"] < 1:
         raise InvalidInputError("The number of layers (num_layers) must be at least 1.")
     elif inputs["parameter"] < 0:
         raise InvalidInputError("The parameter (parameter) must be at least 0.")
