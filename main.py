@@ -273,15 +273,7 @@ class ZXCalculusResponseSchema(ma.Schema):
 @blp_zx_calculus.arguments(
     ZXCalculusRequestSchema,
     example=dict(
-        qasm="""
-            OPENQASM 2.0;
-            include \"qelib1.inc\";
-            qreg q[2];
-            rx(0.023809523809523808*pi) q[0];
-            rz(0.023809523809523808*pi) q[0];
-            rx(0.023809523809523808*pi) q[1];
-            rz(0.023809523809523808*pi) q[1];
-        """,
+        qasm="OPENQASM 2.0;include \"qelib1.inc\";qreg q[2];rx(0.023809523809523808*pi) q[0];rz(0.023809523809523808*pi) q[0];rx(0.023809523809523808*pi) q[1];rz(0.023809523809523808*pi) q[1];",
         num_layers=1,
         hamiltonian='ZZ',
         parameter=0,

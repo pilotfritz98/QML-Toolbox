@@ -2,7 +2,6 @@ pub mod sim;
 pub mod variance;
 pub mod iqp;
 pub mod toy;
-pub mod qasmcircuit;
 
 use std::env;
 use quizx::circuit::*;
